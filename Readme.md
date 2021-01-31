@@ -40,10 +40,10 @@ var_dump("decrypted secret : $decryptedSecret");
 ## Resources
 
 ### Shamir's secret Sharing Scheme readings
-https://en.wikipedia.org/wiki/Homomorphic_secret_sharing
-https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing
-https://wiki.owasp.org/index.php/Security_by_Design_Principles
-https://kariera.future-processing.pl/blog/splitting-your-secrets-with-shamirs-secret-sharing-scheme/
-https://www.geeksforgeeks.org/shamirs-secret-sharing-algorithm-cryptography/
-https://ericrafaloff.com/shamirs-secret-sharing-scheme/
+https://en.wikipedia.org/wiki/Homomorphic_secret_sharing  
+https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing  
+https://wiki.owasp.org/index.php/Security_by_Design_Principles  
+https://kariera.future-processing.pl/blog/splitting-your-secrets-with-shamirs-secret-sharing-scheme/  
+https://www.geeksforgeeks.org/shamirs-secret-sharing-algorithm-cryptography/  
+https://ericrafaloff.com/shamirs-secret-sharing-scheme/  
 
