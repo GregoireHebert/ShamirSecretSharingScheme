@@ -1,0 +1,31 @@
+{
+    "name": "gheb/shamir-secret-sharing-scheme",
+    "description": "PHP library ffor the shamir secret sharing scheme",
+    "homepage": "https://github.com/GregoireHebert/ShamirSecretSharingScheme",
+    "license": "MIT",
+    "type": "library",
+    "keywords": ["php","cryptographic","shamir secret sharing scheme", "ssss", "secret", "polynomial", "lagrange"],
+    "readme": "README.md",
+    "authors": [
+        {
+            "name": "Grégoire Hébert",
+            "email": "gregoire@les-tilleuls.coop",
+            "homepage": "https://knot.gheb.dev/",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "gregoire+support-sss@les-tilleuls.coop"
+    },
+    "require": {
+        "ext-bcmath": "*",
+        "ext-sodium": "*",
+        "ext-gmp": "*",
+        "krowinski/bcmath-extended": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gheb\\ShamirSecretSharingScheme\\": "src"
+        }
+    }
+}

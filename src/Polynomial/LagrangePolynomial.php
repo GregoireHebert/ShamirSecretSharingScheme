@@ -2,13 +2,19 @@
 
 declare(strict_types=1);
 
+namespace Gheb\ShamirSecretSharingScheme\Polynomial;
+
+bcscale(1000);
+
+use BCMathExtended\BC;
+
 class LagrangePolynomial
 {
     /** @var int Index of x */
-    const X = 0;
+    const X = "0";
 
     /** @var int Index of y */
-    const Y = 1;
+    const Y = "1";
 
     /**
      * Interpolate
@@ -19,11 +25,8 @@ class LagrangePolynomial
      *
      * @return Polynomial        The lagrange polynomial p(x)
      */
-    public static function interpolate($source, ...$args): Polynomial
+    public static function interpolate(array $points): Polynomial
     {
-        // Get an array of points from our $source argument
-        $points = $source;
-
         // Validate input and sort points
         self::validate($points, $degree = 1);
         $sorted = self::sort($points);
@@ -34,7 +37,7 @@ class LagrangePolynomial
 
         // Initialize
         $n   = \count($sorted);
-        $pT = new Polynomial([0]);
+        $pT = new Polynomial(["0"]);
 
         for ($i = 0; $i < $n; $i++) {
             $piT = new Polynomial([$sorted[$i][$y]]); // yi
@@ -42,14 +45,17 @@ class LagrangePolynomial
                 if ($j === $i) {
                     continue;
                 }
-                $xi   = $sorted[$i][$x];
-                $xj   = $sorted[$j][$x];
 
-                $LiT = new Polynomial([1 / ($xi - $xj), -$xj / ($xi - $xj)]);
+                $xi = $sorted[$i][$x];
+                $xj = $sorted[$j][$x];
+
+                $LiT = new Polynomial([BC::div("1", BC::sub($xi, $xj)), BC::div("-$xj", BC::sub($xi, $xj))]);
                 $piT = $piT->multiply($LiT);
             }
             $pT = $pT->add($piT);
         }
+
+        $pT->roundCoefficients();
 
         return $pT;
     }
@@ -76,7 +82,7 @@ class LagrangePolynomial
 
     protected static function sort(array $points): array
     {
-        \usort($points, function (array $a, array $b) {
+        \usort($points, static function (array $a, array $b) {
             return $a[0] <=> $b[0];
         });
 
