@@ -27,5 +27,5 @@ var_dump($points);
 // reconstructing and decrypting
 // to reconstruct the secretKey the 3 points are needed.
 $decryptedSecretKey = ShamirSecretSharingHelper::reconstructSecret($points);
-$decryptedSecret = SodiumHelper::decrypt($encryptedMessage, $nonce, $secretKey);
+$decryptedSecret = SodiumHelper::decrypt($encryptedMessage, $nonce, $decryptedSecretKey);
 var_dump("decrypted secret : $decryptedSecret");

@@ -18,14 +18,14 @@ $encryptedMessage = SodiumHelper::encrypt($secret, $secretKey, $nonce);
 
 // This is the best part !
 // It splits the secret key into 5 (or more) shares. (but it could be more)
-$points = ShamirSecretSharingHelper::getShareablePoints($secretKey, 5);
+$points = ShamirSecretSharingHelper::getShareablePoints($secretKey, 3, 5);
 var_dump($points);
 
 // there you can store your points at different locations.
 // and later get them back to get your secret back
 
 // reconstructing and decrypting
-// to reconstruct the secretKey at least 3 points are needed.
+// to reconstruct the secretKey at least 3 points are needed.s
 $decryptedSecretKey = ShamirSecretSharingHelper::reconstructSecret([$points[0], $points[2], $points[3]]);
-$decryptedSecret = SodiumHelper::decrypt($encryptedMessage, $nonce, $secretKey);
+$decryptedSecret = SodiumHelper::decrypt($encryptedMessage, $nonce, $decryptedSecretKey);
 var_dump("decrypted secret : $decryptedSecret");

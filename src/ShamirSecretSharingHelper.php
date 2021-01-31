@@ -12,14 +12,18 @@ final class ShamirSecretSharingHelper
     /**
      * This method will split your secret key into N shares (default 3).
      */
-    public static function getShareablePoints(string $secretKey, int $shares = 3): array
+    public static function getShareablePoints(string $secretKey, int $minShares = 3, $maxShares = 0): array
     {
+        if ($maxShares === 0 || $maxShares < $minShares) {
+            $maxShares = $minShares;
+        }
+
         // bin to dec
         $number = gmp_import($secretKey);
         $dec = gmp_strval($number);
 
         // split into N shares here 3 for example it mean I need a polynomial function of degree 2. (k-1)
-        $k = $shares;
+        $k = $minShares;
 
         // including our secret, we need 2 more numbers at random to plot our function.
         // they are coefficient, no real needs to be high.
@@ -29,11 +33,11 @@ final class ShamirSecretSharingHelper
 
         $polynomial = new Polynomial([...$numbers, $dec]);
 
-        // let generate 3 points to dispatch
+        // let generate N points to dispatch
         return array_map(static function () use ($polynomial){
             $rand = random_int(0, 100);
             return ["$rand", $polynomial("$rand")];
-        }, array_fill(0, $k, null));
+        }, array_fill(0, $maxShares, null));
     }
 
     public static function reconstructSecret(array $points): ?string
