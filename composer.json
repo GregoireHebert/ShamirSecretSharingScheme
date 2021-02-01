@@ -18,6 +18,7 @@
         "email": "gregoire+support-sss@les-tilleuls.coop"
     },
     "require": {
+        "php": "^7.4|^8.0",
         "ext-bcmath": "*",
         "ext-sodium": "*",
         "ext-gmp": "*",
