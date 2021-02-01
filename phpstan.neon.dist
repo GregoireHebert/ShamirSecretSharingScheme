@@ -1,6 +1,9 @@
 parameters:
-    level: 5
+    level: 6
     paths:
         - src
         - examples
     inferPrivatePropertyTypeFromConstructor: true
+    checkMissingIterableValueType: false
+    ignoreErrors:
+        - '#.*has parameter \$polynomial with no typehint specified.#'

@@ -37,7 +37,7 @@ final class SodiumHelper
         return sodium_crypto_secretbox($paddedMessage, $nonce, $secretKey);
     }
 
-    public static function decrypt(string $encryptedMessage, string $nonce, string $secretkey)
+    public static function decrypt(string $encryptedMessage, string $nonce, string $secretkey): string
     {
         $decryptedPaddedMessage = sodium_crypto_secretbox_open($encryptedMessage, $nonce, $secretkey);
 

@@ -21,7 +21,7 @@ final class ShamirSecretSharingHelper
     /**
      * This method will split your secret key into N shares (default 3).
      */
-    public static function getShareablePoints(string $secretKey, $m, int $minShares = 3, $maxShares = 0): array
+    public static function getShareablePoints(string $secretKey, string $m, int $minShares = 3, int $maxShares = 0): array
     {
         if (0 === $maxShares || $maxShares < $minShares) {
             $maxShares = $minShares;
@@ -51,7 +51,7 @@ final class ShamirSecretSharingHelper
         return $map;
     }
 
-    public static function reconstructSecret(array $points, $m): ?string
+    public static function reconstructSecret(array $points, string $m): ?string
     {
         $lp = LagrangePolynomial::interpolate($points, $m);
         $rdec = $lp('0', false);

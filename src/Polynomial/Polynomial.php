@@ -50,7 +50,7 @@ class Polynomial
         return $this->degree;
     }
 
-    public function __invoke(string $x, bool $applyModulo = true)
+    public function __invoke(string $x, bool $applyModulo = true): string
     {
         // Start with the zero polynomial
         $polynomial = static function () {
@@ -163,47 +163,47 @@ class Polynomial
         };
     }
 
-    private static function multiAdd(array ...$arrays): array
+    private static function multiAdd(array ...$points): array
     {
-        self::checkArrayLengths($arrays);
+        self::checkArrayLengths($points);
 
-        $number_of_arrays = \count($arrays);
-        $length_of_arrays = \count($arrays[0]);
+        $number_of_arrays = \count($points);
+        $length_of_arrays = \count($points[0]);
         $sums = array_fill(0, $length_of_arrays, '0');
 
         for ($i = 0; $i < $length_of_arrays; ++$i) {
             for ($j = 0; $j < $number_of_arrays; ++$j) {
-                $sums[$i] = BC::add($sums[$i], $arrays[$j][$i]);
+                $sums[$i] = BC::add($sums[$i], $points[$j][$i]);
             }
         }
 
         return $sums;
     }
 
-    private static function checkArrayLengths(array $arrays): bool
+    private static function checkArrayLengths(array $points): bool
     {
-        if (\count($arrays) < 2) {
-            throw new \Exception('Need at least two arrays to map over');
+        if (\count($points) < 2) {
+            throw new \Exception('Need at least two points to map over');
         }
 
-        $n = \count($arrays[0]);
-        foreach ($arrays as $array) {
+        $n = \count($points[0]);
+        foreach ($points as $array) {
             if (\count($array) !== $n) {
-                throw new \Exception('Lengths of arrays are not equal');
+                throw new \Exception('One point is missing a coordinate.');
             }
         }
 
         return true;
     }
 
-    private function checkNumericOrPolynomial($input, string $modulo): self
+    private function checkNumericOrPolynomial($polynomial, string $modulo): self
     {
-        if ($input instanceof self) {
-            return $input;
+        if ($polynomial instanceof self) {
+            return $polynomial;
         }
 
-        if (\is_string($input) && \is_numeric($input)) {
-            return new self([$input], $modulo);
+        if (\is_string($polynomial) && \is_numeric($polynomial)) {
+            return new self([$polynomial], $modulo);
         }
 
         throw new \Exception('Input must be a Polynomial or a numeric string');
