@@ -23,13 +23,16 @@ class LagrangePolynomial
      *                           (point) contains precisely two numbers, an x and y.
      *                           Example array: [[1,2], [2,3], [x,y], ...].
      *
+     * @param string $m The value used to perform modulo arithmetics on Y values.
+     *
      * @return Polynomial        The lagrange polynomial p(x)
      */
-    public static function interpolate(array $points): Polynomial
+    public static function interpolate(array $points, $m): Polynomial
     {
         // Validate input and sort points
-        self::validate($points, $degree = 1);
-        $sorted = self::sort($points);
+        $rewinded = self::rewind($points, $m);
+        self::validate($rewinded, $degree = 1);
+        $sorted = self::sort($rewinded);
 
         // Descriptive constants
         $x = self::X;
@@ -37,10 +40,10 @@ class LagrangePolynomial
 
         // Initialize
         $n   = \count($sorted);
-        $pT = new Polynomial(["0"]);
+        $pT = new Polynomial(["0"], $m);
 
         for ($i = 0; $i < $n; $i++) {
-            $piT = new Polynomial([$sorted[$i][$y]]); // yi
+            $piT = new Polynomial([$sorted[$i][$y]], $m); // yi
             for ($j = 0; $j < $n; $j++) {
                 if ($j === $i) {
                     continue;
@@ -49,10 +52,10 @@ class LagrangePolynomial
                 $xi = $sorted[$i][$x];
                 $xj = $sorted[$j][$x];
 
-                $LiT = new Polynomial([BC::div("1", BC::sub($xi, $xj)), BC::div("-$xj", BC::sub($xi, $xj))]);
-                $piT = $piT->multiply($LiT);
+                $LiT = new Polynomial([BC::div("1", BC::sub($xi, $xj)), BC::div("-$xj", BC::sub($xi, $xj))], $m);
+                $piT = $piT->multiply($LiT, $m);
             }
-            $pT = $pT->add($piT);
+            $pT = $pT->add($piT, $m);
         }
 
         $pT->roundCoefficients();
@@ -85,6 +88,16 @@ class LagrangePolynomial
         \usort($points, static function (array $a, array $b) {
             return $a[0] <=> $b[0];
         });
+
+        return $points;
+    }
+
+    protected static function rewind(array $points, $m): array
+    {
+        $points = array_map(static function ($el) use ($m) {
+            $el[1] = BC::add(BC::mul($m, $el[2]), $el[1]); unset($el[2]);
+            return $el;
+        }, $points);
 
         return $points;
     }

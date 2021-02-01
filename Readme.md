@@ -47,3 +47,12 @@ https://kariera.future-processing.pl/blog/splitting-your-secrets-with-shamirs-se
 https://www.geeksforgeeks.org/shamirs-secret-sharing-algorithm-cryptography/  
 https://ericrafaloff.com/shamirs-secret-sharing-scheme/  
 
+## Security Considerations
+
+Sharmir’s secret sharing scheme offers information-theoretic security, meaning that the math we explored has been proven to be unbreakable, even against an attacker with unlimited computing power. However, the scheme still does contain a couple of known issues.
+
+For example, Shamir’s scheme does not produce verifiable shares, which means that individuals are free to submit fake shares and prevent the correct secret from being reconstructed. An adversarial share holder with enough information can even produce a different share such that SS is reconstructed to a value of their choice. This issue is addressed by verifiable secret sharing schemes such as Feldman’s scheme.
+
+Another issue is that because the length of any given share is equal to the length of an associated secret, the length of a secret is easily leaked. This issue is trivial to fix by simply padding the secret to a fixed length which should be done with sodium as demonstrated in the examples.
+
+Finally, it is important to note that our concerns about security may extend beyond just the scheme itself. For real world cryptography applications, there is often the threat of side channel attacks, in which an attacker attempts to extract useful information from application timing, caching, fault, and more. If this is a concern, careful considerations should be made during development, such as using constant time functions and lookups, preventing memory from paging to disk, and a bunch of other things that are beyond the scope of this library.

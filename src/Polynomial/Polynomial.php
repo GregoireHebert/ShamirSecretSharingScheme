@@ -10,13 +10,17 @@ use BCMathExtended\BC;
 
 class Polynomial
 {
+    public $quotient;
+
     /** @var string */
     private $degree;
 
     /** @var array */
     private $coefficients;
 
-    public function __construct(array $coefficients)
+    private $m;
+
+    public function __construct(array $coefficients, $m = 0)
     {
         // Remove coefficients that are leading zeros
         $coefficients = array_filter($coefficients);
@@ -27,6 +31,7 @@ class Polynomial
 
         $this->degree       = (string)(count($coefficients) - 1);
         $this->coefficients = $coefficients;
+        $this->m = $m;
     }
 
     /**
@@ -37,7 +42,7 @@ class Polynomial
         return $this->degree;
     }
 
-    public function __invoke(string $x)
+    public function __invoke(string $x, $final = false)
     {
         // Start with the zero polynomial
         $polynomial = static function () {
@@ -55,7 +60,14 @@ class Polynomial
             $polynomial = self::arithmeticAdd($polynomial, $term);
         }
 
-        return $polynomial($x);
+        $value = $polynomial($x);
+
+        if ($final) { return $value; }
+
+        $reminders = BC::mod($value, $this->m);
+        $this->quotient = BC::div(BC::sub($value, $reminders), $this->m);
+
+        return $reminders;
     }
 
     public function roundCoefficients()
@@ -75,9 +87,9 @@ class Polynomial
         }
     }
 
-    public function add($polynomial): self
+    public function add($polynomial, $p): self
     {
-        $polynomial = $this->checkNumericOrPolynomial($polynomial);
+        $polynomial = $this->checkNumericOrPolynomial($polynomial, $p);
 
         $coefficientsA = $this->coefficients;
         $coefficientsB = $polynomial->coefficients;
@@ -95,12 +107,12 @@ class Polynomial
 
         $coefficientsSum = self::multiAdd($coefficientsA, $coefficientsB);
 
-        return new Polynomial($coefficientsSum);
+        return new Polynomial($coefficientsSum, $p);
     }
 
     public static function arithmeticAdd(callable ...$args): callable
     {
-        $sum = function ($x, ...$args) {
+        $sum = static function ($x, ...$args) {
             $function = "0";
             foreach ($args as $arg) {
                 $function = BC::add($function, $arg($x));
@@ -146,9 +158,9 @@ class Polynomial
         return true;
     }
 
-    public function multiply($polynomial): Polynomial
+    public function multiply($polynomial, $m): Polynomial
     {
-        $polynomial = $this->checkNumericOrPolynomial($polynomial);
+        $polynomial = $this->checkNumericOrPolynomial($polynomial, $m);
         // Calculate the degree of the product of the polynomials
         $productDegree = BC::add($this->degree, $polynomial->degree);
 
@@ -176,14 +188,14 @@ class Polynomial
         return new self($productCoefficients);
     }
 
-    private function checkNumericOrPolynomial($input): self
+    private function checkNumericOrPolynomial($input, $m): self
     {
         if ($input instanceof self) {
             return $input;
         }
 
         if (\is_string($input)) {
-            return new Polynomial([$input]);
+            return new Polynomial([$input], $m);
         }
 
         throw new \Exception('Input must be a Polynomial or a number');
