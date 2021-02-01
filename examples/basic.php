@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 require '../vendor/autoload.php';
 
-use BCMathExtended\BC;
 use Gheb\ShamirSecretSharingScheme\SodiumHelper;
 use Gheb\ShamirSecretSharingScheme\ShamirSecretSharingHelper;
 
