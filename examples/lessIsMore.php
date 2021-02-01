@@ -1,11 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Gheb\ShamirSecretSharingScheme library.
+ *
+ * (c) Grégoire Hébert <gregoire@les-tilleuls.coop>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 require '../vendor/autoload.php';
 
-use Gheb\ShamirSecretSharingScheme\SodiumHelper;
 use Gheb\ShamirSecretSharingScheme\ShamirSecretSharingHelper;
+use Gheb\ShamirSecretSharingScheme\SodiumHelper;
 
 $secretKey = SodiumHelper::generateKey(); // this will be stored in shares.
 $nonce = SodiumHelper::generateNonce(); // this could be part of your app configuration
@@ -18,7 +27,7 @@ $encryptedMessage = SodiumHelper::encrypt($secret, $secretKey, $nonce);
 
 // initialisation of modulo value, addressing insecure integer arithmetic.
 // this would be part of your app configuration or stored elsewhere.
-$m = "997"; // chose any prime number (here around 1000)
+$m = '997'; // chose any prime number (here around 1000)
 
 // This is the best part !
 // It splits the secret key into 5 (or more) shares. (but it could be more)

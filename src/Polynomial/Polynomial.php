@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Gheb\ShamirSecretSharingScheme library.
+ *
+ * (c) Grégoire Hébert <gregoire@les-tilleuls.coop>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 declare(strict_types=1);
 
 namespace Gheb\ShamirSecretSharingScheme\Polynomial;
@@ -27,16 +36,13 @@ class Polynomial
         $coefficients = array_values($coefficients);
 
         // If coefficients remain, re-index them. Otherwise return [0] for p(x) = 0
-        $coefficients = !empty($coefficients) ? $coefficients : ["0"];
+        $coefficients = !empty($coefficients) ? $coefficients : ['0'];
 
-        $this->degree       = (string)(count($coefficients) - 1);
+        $this->degree = (string) (\count($coefficients) - 1);
         $this->coefficients = $coefficients;
         $this->m = $m;
     }
 
-    /**
-     * @return string
-     */
     public function getDegree(): string
     {
         return $this->degree;
@@ -46,11 +52,11 @@ class Polynomial
     {
         // Start with the zero polynomial
         $polynomial = static function () {
-            return "0";
+            return '0';
         };
 
         // Iterate over each coefficient to create a callback function for each term
-        for ($i = 0; $i < $this->degree+1; $i++) {
+        for ($i = 0; $i < $this->degree + 1; ++$i) {
             // Create a callback function for the current term
             $term = function ($x) use ($i) {
                 return BC::mul($this->coefficients[$i], BC::pow($x, BC::sub($this->degree, "$i")));
@@ -62,7 +68,9 @@ class Polynomial
 
         $value = $polynomial($x);
 
-        if ($final) { return $value; }
+        if ($final) {
+            return $value;
+        }
 
         $reminders = BC::mod($value, $this->m);
         $this->quotient = BC::div(BC::sub($value, $reminders), $this->m);
@@ -70,15 +78,15 @@ class Polynomial
         return $reminders;
     }
 
-    public function roundCoefficients()
+    public function roundCoefficients(): void
     {
         foreach ($this->coefficients as &$coefficient) {
             if ($coefficient < 100) {
-                $coefficient = (string)round($coefficient);
+                $coefficient = (string) round($coefficient);
                 continue;
             }
             if (false !== $p = strpos($coefficient, '.9')) {
-                $coefficient = BC::add(substr($coefficient, 0, $p),"1");
+                $coefficient = BC::add(substr($coefficient, 0, $p), '1');
                 continue;
             }
             if (false !== $p = strpos($coefficient, '.0')) {
@@ -96,27 +104,28 @@ class Polynomial
 
         // If degrees are unequal, make coefficient array sizes equal so we can do component-wise addition
         $degreeDifference = BC::sub($this->getDegree(), $polynomial->getDegree());
-        if ($degreeDifference !== "0") {
-            $zeroArray = \array_fill(0, (int)\abs((float)$degreeDifference), "0");
+        if ('0' !== $degreeDifference) {
+            $zeroArray = array_fill(0, (int) abs((float) $degreeDifference), '0');
             if ($degreeDifference < 0) {
-                $coefficientsA = \array_merge($zeroArray, $coefficientsA);
+                $coefficientsA = array_merge($zeroArray, $coefficientsA);
             } else {
-                $coefficientsB = \array_merge($zeroArray, $coefficientsB);
+                $coefficientsB = array_merge($zeroArray, $coefficientsB);
             }
         }
 
         $coefficientsSum = self::multiAdd($coefficientsA, $coefficientsB);
 
-        return new Polynomial($coefficientsSum, $p);
+        return new self($coefficientsSum, $p);
     }
 
     public static function arithmeticAdd(callable ...$args): callable
     {
         $sum = static function ($x, ...$args) {
-            $function = "0";
+            $function = '0';
             foreach ($args as $arg) {
                 $function = BC::add($function, $arg($x));
             }
+
             return $function;
         };
 
@@ -131,10 +140,10 @@ class Polynomial
 
         $number_of_arrays = \count($arrays);
         $length_of_arrays = \count($arrays[0]);
-        $sums             = \array_fill(0, $length_of_arrays, "0");
+        $sums = array_fill(0, $length_of_arrays, '0');
 
-        for ($i = 0; $i < $length_of_arrays; $i++) {
-            for ($j = 0; $j < $number_of_arrays; $j++) {
+        for ($i = 0; $i < $length_of_arrays; ++$i) {
+            for ($j = 0; $j < $number_of_arrays; ++$j) {
                 $sums[$i] = BC::add($sums[$i], $arrays[$j][$i]);
             }
         }
@@ -158,30 +167,30 @@ class Polynomial
         return true;
     }
 
-    public function multiply($polynomial, $m): Polynomial
+    public function multiply($polynomial, $m): self
     {
         $polynomial = $this->checkNumericOrPolynomial($polynomial, $m);
         // Calculate the degree of the product of the polynomials
         $productDegree = BC::add($this->degree, $polynomial->degree);
 
         // Reverse the coefficients arrays so you can multiply component-wise
-        $coefficientsA = \array_reverse($this->coefficients);
-        $coefficientsB = \array_reverse($polynomial->coefficients);
+        $coefficientsA = array_reverse($this->coefficients);
+        $coefficientsB = array_reverse($polynomial->coefficients);
 
         // Start with an array of coefficients that all equal 0
-        $productCoefficients = \array_fill(0,(int)$productDegree+1, "0");
+        $productCoefficients = array_fill(0, (int) $productDegree + 1, '0');
 
         // Iterate through the product of terms component-wise
-        for ($i = 0; $i < $this->degree + 1; $i++) {
-            for ($j = 0; $j < $polynomial->degree + 1; $j++) {
+        for ($i = 0; $i < $this->degree + 1; ++$i) {
+            for ($j = 0; $j < $polynomial->degree + 1; ++$j) {
                 // Calculate the degree of the current product
-                $degree = BC::sub($productDegree, (string)($i+$j));
+                $degree = BC::sub($productDegree, (string) ($i + $j));
 
                 // Calculate the product of the coefficients
                 $product = BC::mul($coefficientsA[$i], $coefficientsB[$j]);
 
                 // Add the product to the existing coefficient of the current degree
-                $productCoefficients[(int)$degree] = BC::add($productCoefficients[(int)$degree], $product);
+                $productCoefficients[(int) $degree] = BC::add($productCoefficients[(int) $degree], $product);
             }
         }
 
@@ -195,7 +204,7 @@ class Polynomial
         }
 
         if (\is_string($input)) {
-            return new Polynomial([$input], $m);
+            return new self([$input], $m);
         }
 
         throw new \Exception('Input must be a Polynomial or a number');
