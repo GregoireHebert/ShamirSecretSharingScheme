@@ -56,7 +56,7 @@ class Polynomial
         };
 
         // Iterate over each coefficient to create a callback function for each term
-        for ($i = 0; $i < $this->degree + 1; ++$i) {
+        for ($i = 0; $i < (int)$this->degree + 1; ++$i) {
             // Create a callback function for the current term
             $term = function ($x) use ($i) {
                 return BC::mul($this->coefficients[$i], BC::pow($x, BC::sub($this->degree, "$i")));
@@ -181,8 +181,8 @@ class Polynomial
         $productCoefficients = array_fill(0, (int) $productDegree + 1, '0');
 
         // Iterate through the product of terms component-wise
-        for ($i = 0; $i < $this->degree + 1; ++$i) {
-            for ($j = 0; $j < $polynomial->degree + 1; ++$j) {
+        for ($i = 0; $i < (int)$this->degree + 1; ++$i) {
+            for ($j = 0; $j < (int)$polynomial->degree + 1; ++$j) {
                 // Calculate the degree of the current product
                 $degree = BC::sub($productDegree, (string) ($i + $j));
 
