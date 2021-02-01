@@ -35,7 +35,7 @@ class LagrangePolynomial
      *
      * @return Polynomial The lagrange polynomial p(x)
      */
-    public static function interpolate(array $points, $m): Polynomial
+    public static function interpolate(array $points, string $m): Polynomial
     {
         // Validate input and sort points
         $rewinded = self::rewind($points, $m);
@@ -100,7 +100,7 @@ class LagrangePolynomial
         return $points;
     }
 
-    protected static function rewind(array $points, $m): array
+    protected static function rewind(array $points, string $m): array
     {
         $points = array_map(static function ($el) use ($m) {
             $el[1] = BC::add(BC::mul($m, $el[2]), $el[1]);

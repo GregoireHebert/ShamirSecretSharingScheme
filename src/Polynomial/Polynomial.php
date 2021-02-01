@@ -19,6 +19,7 @@ use BCMathExtended\BC;
 
 class Polynomial
 {
+    /** @var string */
     public $quotient;
 
     /** @var string */
@@ -27,9 +28,10 @@ class Polynomial
     /** @var array */
     private $coefficients;
 
+    /** @var string  */
     private $m;
 
-    public function __construct(array $coefficients, $m = 0)
+    public function __construct(array $coefficients, string $m)
     {
         // Remove coefficients that are leading zeros
         $coefficients = array_filter($coefficients);
@@ -48,7 +50,7 @@ class Polynomial
         return $this->degree;
     }
 
-    public function __invoke(string $x, $final = false)
+    public function __invoke(string $x, bool $final = false)
     {
         // Start with the zero polynomial
         $polynomial = static function () {
@@ -95,7 +97,7 @@ class Polynomial
         }
     }
 
-    public function add($polynomial, $p): self
+    public function add($polynomial, string $p): self
     {
         $polynomial = $this->checkNumericOrPolynomial($polynomial, $p);
 
@@ -167,7 +169,7 @@ class Polynomial
         return true;
     }
 
-    public function multiply($polynomial, $m): self
+    public function multiply($polynomial, string $m): self
     {
         $polynomial = $this->checkNumericOrPolynomial($polynomial, $m);
         // Calculate the degree of the product of the polynomials
@@ -194,10 +196,10 @@ class Polynomial
             }
         }
 
-        return new self($productCoefficients);
+        return new self($productCoefficients, $m);
     }
 
-    private function checkNumericOrPolynomial($input, $m): self
+    private function checkNumericOrPolynomial($input, string $m): self
     {
         if ($input instanceof self) {
             return $input;
