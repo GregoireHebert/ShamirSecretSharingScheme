@@ -27,7 +27,7 @@ $encryptedMessage = SodiumHelper::encrypt($secret, $secretKey, $nonce);
 
 // initialisation of modulo value, addressing insecure integer arithmetic.
 // this would be part of your app configuration or stored elsewhere.
-$m = "997"; // chose any prime number around 100
+$m = "997"; // chose any prime number (here around 1000)
 
 $points = ShamirSecretSharingHelper::getShareablePoints($secretKey, $m, 3);
 var_dump($points);

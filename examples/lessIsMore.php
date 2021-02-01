@@ -18,7 +18,7 @@ $encryptedMessage = SodiumHelper::encrypt($secret, $secretKey, $nonce);
 
 // initialisation of modulo value, addressing insecure integer arithmetic.
 // this would be part of your app configuration or stored elsewhere.
-$m = "997"; // chose any prime number around 100
+$m = "997"; // chose any prime number (here around 1000)
 
 // This is the best part !
 // It splits the secret key into 5 (or more) shares. (but it could be more)
