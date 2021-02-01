@@ -45,7 +45,6 @@ final class ShamirSecretSharingHelper
         // let generate N points to dispatch
         $map = array_map(static function () use ($polynomial) {
             $rand = random_int(0, 100);
-
             return ["$rand", $polynomial("$rand"), $polynomial->quotient];
         }, array_fill(0, $maxShares, null));
 
@@ -55,7 +54,7 @@ final class ShamirSecretSharingHelper
     public static function reconstructSecret(array $points, $m): ?string
     {
         $lp = LagrangePolynomial::interpolate($points, $m);
-        $rdec = $lp('0', true);
+        $rdec = $lp('0', false);
 
         // TODO for some reasons, keys like "1472502186037957747441234705645302953943147992477563238054054428338355254101" fail to be converted
         return @hex2bin(gmp_strval(gmp_init($rdec, 10), 16)) ?: null;

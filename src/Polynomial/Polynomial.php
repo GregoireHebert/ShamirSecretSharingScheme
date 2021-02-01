@@ -29,20 +29,20 @@ class Polynomial
     private $coefficients;
 
     /** @var string  */
-    private $m;
+    private $modulo;
 
-    public function __construct(array $coefficients, string $m)
+    public function __construct(array $coefficients, string $modulo)
     {
         // Remove coefficients that are leading zeros
         $coefficients = array_filter($coefficients);
-        $coefficients = array_values($coefficients);
 
         // If coefficients remain, re-index them. Otherwise return [0] for p(x) = 0
+        $coefficients = array_values($coefficients);
         $coefficients = !empty($coefficients) ? $coefficients : ['0'];
 
         $this->degree = (string) (\count($coefficients) - 1);
         $this->coefficients = $coefficients;
-        $this->m = $m;
+        $this->modulo = $modulo;
     }
 
     public function getDegree(): string
@@ -50,7 +50,7 @@ class Polynomial
         return $this->degree;
     }
 
-    public function __invoke(string $x, bool $final = false)
+    public function __invoke(string $x, bool $applyModulo = true)
     {
         // Start with the zero polynomial
         $polynomial = static function () {
@@ -70,12 +70,13 @@ class Polynomial
 
         $value = $polynomial($x);
 
-        if ($final) {
+        // return the value before applying the modulo operation. Needed to get the recomputed secret
+        if (!$applyModulo) {
             return $value;
         }
 
-        $reminders = BC::mod($value, $this->m);
-        $this->quotient = BC::div(BC::sub($value, $reminders), $this->m);
+        $reminders = BC::mod($value, $this->modulo);
+        $this->quotient = BC::div(BC::sub($value, $reminders), $this->modulo);
 
         return $reminders;
     }
@@ -108,11 +109,7 @@ class Polynomial
         $degreeDifference = BC::sub($this->getDegree(), $polynomial->getDegree());
         if ('0' !== $degreeDifference) {
             $zeroArray = array_fill(0, (int) abs((float) $degreeDifference), '0');
-            if ($degreeDifference < 0) {
-                $coefficientsA = array_merge($zeroArray, $coefficientsA);
-            } else {
-                $coefficientsB = array_merge($zeroArray, $coefficientsB);
-            }
+            $coefficientsA = array_merge($zeroArray, $degreeDifference < 0 ? $coefficientsA : $coefficientsB);
         }
 
         $coefficientsSum = self::multiAdd($coefficientsA, $coefficientsB);
@@ -120,7 +117,37 @@ class Polynomial
         return new self($coefficientsSum, $p);
     }
 
-    public static function arithmeticAdd(callable ...$args): callable
+    public function multiply($polynomial, string $modulo): self
+    {
+        $polynomial = $this->checkNumericOrPolynomial($polynomial, $modulo);
+        // Calculate the degree of the product of the polynomials
+        $productDegree = BC::add($this->degree, $polynomial->degree);
+
+        // Reverse the coefficients arrays so you can multiply component-wise
+        $coefficientsA = array_reverse($this->coefficients);
+        $coefficientsB = array_reverse($polynomial->coefficients);
+
+        // Start with an array of coefficients that all equal 0
+        $productCoefficients = array_fill(0, (int) $productDegree + 1, '0');
+
+        // Iterate through the product of terms component-wise
+        for ($i = 0; $i < (int)$this->degree + 1; ++$i) {
+            for ($j = 0; $j < (int)$polynomial->degree + 1; ++$j) {
+                // Calculate the degree of the current product
+                $degree = BC::sub($productDegree, (string) ($i + $j));
+
+                // Calculate the product of the coefficients
+                $product = BC::mul($coefficientsA[$i], $coefficientsB[$j]);
+
+                // Add the product to the existing coefficient of the current degree
+                $productCoefficients[(int) $degree] = BC::add($productCoefficients[(int) $degree], $product);
+            }
+        }
+
+        return new self($productCoefficients, $modulo);
+    }
+
+    private static function arithmeticAdd(callable ...$args): callable
     {
         $sum = static function ($x, ...$args) {
             $function = '0';
@@ -131,12 +158,12 @@ class Polynomial
             return $function;
         };
 
-        return function ($x) use ($args, $sum) {
+        return static function ($x) use ($args, $sum) {
             return $sum($x, ...$args);
         };
     }
 
-    public static function multiAdd(array ...$arrays): array
+    private static function multiAdd(array ...$arrays): array
     {
         self::checkArrayLengths($arrays);
 
@@ -169,46 +196,16 @@ class Polynomial
         return true;
     }
 
-    public function multiply($polynomial, string $m): self
-    {
-        $polynomial = $this->checkNumericOrPolynomial($polynomial, $m);
-        // Calculate the degree of the product of the polynomials
-        $productDegree = BC::add($this->degree, $polynomial->degree);
-
-        // Reverse the coefficients arrays so you can multiply component-wise
-        $coefficientsA = array_reverse($this->coefficients);
-        $coefficientsB = array_reverse($polynomial->coefficients);
-
-        // Start with an array of coefficients that all equal 0
-        $productCoefficients = array_fill(0, (int) $productDegree + 1, '0');
-
-        // Iterate through the product of terms component-wise
-        for ($i = 0; $i < (int)$this->degree + 1; ++$i) {
-            for ($j = 0; $j < (int)$polynomial->degree + 1; ++$j) {
-                // Calculate the degree of the current product
-                $degree = BC::sub($productDegree, (string) ($i + $j));
-
-                // Calculate the product of the coefficients
-                $product = BC::mul($coefficientsA[$i], $coefficientsB[$j]);
-
-                // Add the product to the existing coefficient of the current degree
-                $productCoefficients[(int) $degree] = BC::add($productCoefficients[(int) $degree], $product);
-            }
-        }
-
-        return new self($productCoefficients, $m);
-    }
-
-    private function checkNumericOrPolynomial($input, string $m): self
+    private function checkNumericOrPolynomial($input, string $modulo): self
     {
         if ($input instanceof self) {
             return $input;
         }
 
-        if (\is_string($input)) {
-            return new self([$input], $m);
+        if (\is_string($input) && \is_numeric($input)) {
+            return new self([$input], $modulo);
         }
 
-        throw new \Exception('Input must be a Polynomial or a number');
+        throw new \Exception('Input must be a Polynomial or a numeric string');
     }
 }

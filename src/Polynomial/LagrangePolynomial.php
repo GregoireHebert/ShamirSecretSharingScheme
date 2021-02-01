@@ -37,28 +37,26 @@ class LagrangePolynomial
      */
     public static function interpolate(array $points, string $m): Polynomial
     {
-        // Validate input and sort points
-        $rewinded = self::rewind($points, $m);
-        self::validate($rewinded, $degree = 1);
-        $sorted = self::sort($rewinded);
+        // recall modulo arithmetic with a=mq+r formula
+        $recalledPoints = self::moduloRecall($points, $m);
 
-        // Descriptive constants
-        $x = self::X;
-        $y = self::Y;
+        // Validate input and sort points
+        self::validate($recalledPoints, $degree = 1);
+        $sorted = self::sort($recalledPoints);
 
         // Initialize
         $n = \count($sorted);
         $pT = new Polynomial(['0'], $m);
 
         for ($i = 0; $i < $n; ++$i) {
-            $piT = new Polynomial([$sorted[$i][$y]], $m); // yi
+            $piT = new Polynomial([$sorted[$i][self::Y]], $m); // yi
             for ($j = 0; $j < $n; ++$j) {
                 if ($j === $i) {
                     continue;
                 }
 
-                $xi = $sorted[$i][$x];
-                $xj = $sorted[$j][$x];
+                $xi = $sorted[$i][self::X];
+                $xj = $sorted[$j][self::X];
 
                 $LiT = new Polynomial([BC::div('1', BC::sub($xi, $xj)), BC::div("-$xj", BC::sub($xi, $xj))], $m);
                 $piT = $piT->multiply($LiT, $m);
@@ -71,7 +69,7 @@ class LagrangePolynomial
         return $pT;
     }
 
-    public static function validate(array $points, int $degree = 2): void
+    private static function validate(array $points, int $degree = 2): void
     {
         if (\count($points) < $degree) {
             throw new \Exception('You need to have at least $degree sets of coordinates (arrays) for this technique');
@@ -91,7 +89,7 @@ class LagrangePolynomial
         }
     }
 
-    protected static function sort(array $points): array
+    private static function sort(array $points): array
     {
         usort($points, static function (array $a, array $b) {
             return $a[0] <=> $b[0];
@@ -100,7 +98,7 @@ class LagrangePolynomial
         return $points;
     }
 
-    protected static function rewind(array $points, string $m): array
+    private static function moduloRecall(array $points, string $m): array
     {
         $points = array_map(static function ($el) use ($m) {
             $el[1] = BC::add(BC::mul($m, $el[2]), $el[1]);
